@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECURE_PROTOCOL_FINAL_V4</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Vazirmatn', sans-serif; color: #fff; user-select: none; }
+
+        /* صفحه شروع - Cosmic Initiation UI */
+        #start-screen { position: absolute; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%); z-index: 3000; transition: opacity 1.5s ease; }
+        #start-btn { 
+            padding: 25px 60px; border: 1px solid #333; 
+            background: linear-gradient(135deg, rgba(255,255,255,0.01) 0%, rgba(255,215,0,0.05) 100%); 
+            font-family: 'Vazirmatn', sans-serif; font-size: 20px; color: #fff; 
+            cursor: pointer; letter-spacing: 2px; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
+            backdrop-filter: blur(8px); border-radius: 50px; text-shadow: 0 0 10px #fff;
+            box-shadow: 0 0 15px rgba(255,255,255,0.1), inset 0 0 15px rgba(255,255,255,0.05);
+            animation: start-pulse 2s infinite;
+        }
+        @keyframes start-pulse { 0% { box-shadow: 0 0 15px rgba(255,255,255,0.1); } 50% { box-shadow: 0 0 35px rgba(255,215,0,0.3); } 100% { box-shadow: 0 0 15px rgba(255,255,255,0.1); } }
+        #start-btn:hover { color: #ffd700; border-color: #ffd700; box-shadow: 0 0 50px rgba(255,215,0,0.4); transform: scale(1.05); }
+
+        /* فاز تاریکی */
+        #darkness-screen { display: none; position: absolute; width: 100%; height: 100%; background: #000; z-index: 2000; transition: opacity 1s; }
+        #void-terminal { position: absolute; top: 20px; left: 20px; right: 20px; bottom: 20px; font-family: 'Courier New', monospace; font-size: 10px; color: #111; opacity: 0.7; overflow: hidden; text-align: left; direction: ltr; pointer-events: none; }
+        #conquest-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 85%; max-width: 500px; text-align: center; z-index: 2001; }
+        .system-msg { color: #444; font-size: 14px; margin-bottom: 25px; letter-spacing: 2px; }
+        #progress-wrapper { width: 100%; height: 2px; background: #080808; overflow: hidden; position: relative; }
+        #progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #fff, #ffd700); box-shadow: 0 0 25px #ffd700; transition: width 0.1s linear; }
+
+        /* فاز بهشت کیهانی */
+        #heaven-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #0a0a1a 0%, #000 100%); z-index: 1500; }
+        
+        .living-sun { 
+            position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; border-radius: 50%; background: #fff;
+            box-shadow: 0 0 50px 20px #fff, 0 0 100px 50px #ffd700, 0 0 250px 100px #ff6600, 0 0 400px 150px #ff3300, 0 0 600px 300px rgba(255, 215, 0, 0.1);
+            transform: translate(-50%,-50%); animation: sun-birth 6s cubic-bezier(0.22, 1, 0.36, 1) forwards, sun-pulse 8s infinite alternate 6s; opacity: 0; 
+        }
+        @keyframes sun-birth { 0% { opacity:0; transform:translate(-50%,-50%) scale(0.01); filter: blur(10px); } 100% { opacity:1; transform:translate(-50%,-50%) scale(1); filter: blur(0); } }
+        @keyframes sun-pulse { 0% { transform: translate(-50%,-50%) scale(1); } 100% { transform: translate(-50%,-50%) scale(1.1); } }
+
+        #final-text { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 750px; 
+            font-size: 21px; font-weight: 700; line-height: 1.8; text-align: center; color: #fff; z-index: 10; opacity: 0; animation: fade-in 4s forwards 5s;
+            text-shadow: 0 0 20px rgba(0,0,0,1);
+        }
+        @keyframes fade-in { to { opacity: 1; } }
+
+        .flower { position: absolute; bottom: -60px; font-size: 30px; animation: float-up linear infinite; filter: drop-shadow(0 0 10px #ff99cc); z-index: 5; }
+        @keyframes float-up { 0% { transform: translateY(0); opacity: 0; } 10% { opacity: 0.8; } 100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; } }
+
+        canvas#particle-canvas { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none; }
+        canvas#firework-canvas { position:absolute; top:0; left:0; width:100%; height:100%; z-index:12; pointer-events:none; }
+    </style>
+</head>
+<body>
+
+    <audio id="ambient-dark" src="https://www.soundjay.com/communication/sounds/data-transfer-1.mp3" loop></audio>
+    <audio id="light-theme" src="https://files.catbox.moe/229fqq.mp3"></audio>
+
+    <div id="start-screen"><button id="start-btn">در جستجویِ نور...</button></div>
+
+    <div id="darkness-screen">
+        <canvas id="scan-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:1999; pointer-events:none; opacity:0.1;"></canvas>
+        <div id="void-terminal"></div>
+        <div id="conquest-box">
+            <div class="system-msg" id="status-text">جهان در تاریکیِ مطلق...</div>
+            <div id="progress-wrapper"><div id="progress-bar"></div></div>
+        </div>
+    </div>
+
+    <div id="heaven-screen">
+        <canvas id="particle-canvas"></canvas>
+        <canvas id="firework-canvas"></canvas>
+        <div class="living-sun"></div>
+        <div id="flowers-container"></div>
+        <div id="final-text">
+            <p id="typewriter-content" style="background: rgba(0,0,0,0.3); padding: 30px; border-radius: 20px; backdrop-filter: blur(5px);"></p>
+        </div>
+    </div>
+
+    <script>
+        const darkSnd = document.getElementById('ambient-dark');
+        const lightSnd = document.getElementById('light-theme');
+        const finalMessage = `در نخستین روزِ بهار، وقتی جهان هنوز در سکوت و تاریکی فرو رفته بود، نوری متولد شد که همه چیز را روشن کرد. ✨\n\nاو همچون لیلیومِ خاص و کمیاب، نور را در دل‌ها گشود و تاریکی را به عقب راند. ⚔️🌸\n\nنام او در مدارِ کائنات، هلیـا ثبت شده است؛ خورشیدِ کوچکِ ما، طلوعِ زندگی و روشنایی. ☀️\n\nتولدت مبارک، ای نورِ جهان. 🌌\n\n— NoxianWarlord 🍓`;
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            document.getElementById('start-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('start-screen').style.display = 'none';
+                document.getElementById('darkness-screen').style.display = 'block';
+                darkSnd.play();
+                startConquest();
+                initScanVisuals(); // شروع افکت‌های رصد
+            }, 1500);
+        });
+
+        function startConquest() {
+            let prog = 0; const status = document.getElementById('status-text'); const term = document.getElementById('void-terminal');
+            const int = setInterval(() => {
+                prog += Math.random() * 0.45;
+                if (prog > 100) prog = 100;
+                document.getElementById('progress-bar').style.width = prog + '%';
+                term.innerHTML += `> NULL_VOID_DATA_${Math.random().toString(16).slice(2,10)}<br>`;
+                term.scrollTop = term.scrollHeight;
+                if(prog > 20) status.innerText = "رصدِ ارتعاشاتِ ضعیف...";
+                if(prog > 45) { status.innerText = "شکستِ تاریکی آغاز شد..."; triggerLightBurst(); } // ایجاد جرقه نوری
+                if(prog > 75) status.innerHTML = "<span style='color:#fff; text-shadow:0 0 15px #fff;'>نور بر تاریکی غلبه می‌کند...</span>";
+                if(prog >= 100) { clearInterval(int); darkSnd.pause(); status.innerText = "طلوعِ هلیا (لیلیوم)..."; setTimeout(switchToHeaven, 2000); }
+            }, 80);
+        }
+
+        function switchToHeaven() {
+            document.getElementById('darkness-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('darkness-screen').style.display = 'none';
+                document.getElementById('heaven-screen').style.display = 'block';
+                lightSnd.play(); initparticles(); setTimeout(startTypewriter, 2000);
+            }, 1000);
+        }
+
+        function startTypewriter() {
+            const container = document.getElementById('typewriter-content'); let i = 0;
+            function type() {
+                if (i < finalMessage.length) {
+                    container.innerHTML += finalMessage.charAt(i) === '\n' ? '<br>' : finalMessage.charAt(i);
+                    i++; setTimeout(type, 50 + Math.random() * 40);
+                } else {
+                    // فعالسازی فشفشه‌های کیهانی شدیدتر در انتهای متن
+                    triggerCosmicFireworksHeavy();
+                }
+            }
+            type();
+        }
+
+        function initScanVisuals() {
+            const canvas = document.getElementById('scan-canvas'); const ctx = canvas.getContext('2d');
+            canvas.width = innerWidth; canvas.height = innerHeight;
+            let pulses = [];
+            
+            function createPulse() {
+                pulses.push({ x: canvas.width/2, y: canvas.height/2, r: 0, a: 1 });
+            }
+            setInterval(createPulse, 2000); // ایجاد پالس جدید هر ۲ ثانیه
+
+            function anim() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                pulses = pulses.filter(p => p.a > 0);
+                pulses.forEach(p => {
+                    p.r += 2; p.a -= 0.005;
+                    ctx.strokeStyle = `rgba(255,255,255,${p.a})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.stroke();
+                });
+                if(document.getElementById('darkness-screen').style.display !== 'none') requestAnimationFrame(anim);
+            }
+            anim();
+        }
+
+        function triggerLightBurst() {
+            const canvas = document.getElementById('scan-canvas'); const ctx = canvas.getContext('2d');
+            let burst = { x: canvas.width/2, y: canvas.height/2, r: 0, a: 1 };
+            function anim() {
+                burst.r += 10; burst.a -= 0.02;
+                ctx.fillStyle = `rgba(255,255,255,${burst.a})`;
+                ctx.beginPath(); ctx.arc(burst.x, burst.y, burst.r, 0, Math.PI*2); ctx.fill();
+                if(burst.a > 0) requestAnimationFrame(anim);
+            }
+            anim();
+        }
+
+        function initparticles() {
+            const canvas = document.getElementById('particle-canvas'); const ctx = canvas.getContext('2d');
+            canvas.width = innerWidth; canvas.height = innerHeight;
+            let parts = [];
+            for(let i=0; i<300; i++) parts.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, s:Math.random()*1.5+0.2, vx:(Math.random()-0.5)*0.5, vy:(Math.random()-0.5)*0.5, a:Math.random()});
+            function anim() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                parts.forEach(p => {
+                    p.x+=p.vx; p.y+=p.vy;
+                    if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
+                    ctx.beginPath(); ctx.arc(p.x,p.y,p.s,0,Math.PI*2);
+                    ctx.fillStyle=`rgba(255,230,150,${p.a})`; ctx.fill();
+                });
+                requestAnimationFrame(anim);
+            }
+            anim();
+            setInterval(() => {
+                const f = document.createElement('div'); f.className = 'flower'; f.innerText = '🌸';
+                f.style.left = Math.random()*100+'vw'; f.style.animationDuration = (Math.random()*5+8)+'s';
+                document.getElementById('flowers-container').appendChild(f);
+                setTimeout(()=>f.remove(), 12000);
+            }, 700);
+        }
+
+        // سیستم فشفشه‌های کیهانی شدیدتر
+        function triggerCosmicFireworksHeavy() {
+            const canvas = document.getElementById('firework-canvas'); const ctx = canvas.getContext('2d');
+            canvas.width = innerWidth; canvas.height = innerHeight;
+            let fw = [];
+            
+            class Firework {
+                constructor(targetY) {
+                    this.x = Math.random()*canvas.width; this.y = canvas.height;
+                    this.targetY = targetY;
+                    this.vx = (Math.random()-0.5)*5; this.vy = -Math.random()*15 - 15;
+                    this.life = Math.random()*30 + 50; this.color = `hsl(${Math.random()*60+20}, 100%, 70%)`;
+                }
+                update() {
+                    this.x+=this.vx; this.y+=this.vy; this.vy+=0.1; this.life--;
+                    if(this.y<=this.targetY || this.life<=0) { this.life=0; this.explode(); }
+                }
+                draw() {
+                    ctx.fillStyle = this.color; ctx.globalAlpha = this.life/100;
+                    ctx.beginPath(); ctx.arc(this.x, this.y, 2, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1;
+                }
+                explode() {
+                    for(let i=0;i<80;i++){ // تعداد ذرات انفجار بیشتر
+                        fw.push({
+                            x:this.x, y:this.y, 
+                            vx:(Math.random()-0.5)*(Math.random()*15+8), 
+                            vy:(Math.random()-0.5)*(Math.random()*15+8),
+                            life: Math.random()*40+40, color:this.color, spark:true
+                        });
+                    }
+                }
+            }
+
+            // فوران آتشفشانی شدیدتر در ابتدا
+            for(let i=0;i<50;i++) fw.push(new Firework(canvas.height/2 + (Math.random()-0.5)*200));
+
+            function anim() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                fw = fw.filter(p => p.life>0);
+                fw.forEach(p => {
+                    if(p.spark) {
+                        p.x+=p.vx; p.y+=p.vy; p.vy+=0.08; p.life--;
+                        ctx.fillStyle = p.color; ctx.globalAlpha = p.life/100;
+                        ctx.beginPath(); ctx.arc(p.x, p.y, 1.2, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1; // ذرات بزرگتر
+                    } else {
+                        p.update(); p.draw();
+                    }
+                });
+                if(fw.length>0) requestAnimationFrame(anim);
+            }
+            anim();
+        }
+
+        window.addEventListener('resize', ()=>{
+            document.getElementById('particle-canvas').width = innerWidth;
+            document.getElementById('particle-canvas').height = innerHeight;
+        });
+    </script>
+</body>
+</html>
