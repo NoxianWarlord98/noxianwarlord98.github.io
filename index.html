@@ -7,16 +7,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;500;700;900&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body, html { width: 100%; height: 100%; overflow: hidden; background: #020205; font-family: 'Vazirmatn', sans-serif; color: #fff; user-select: none; position: fixed; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background: #020205; font-family: 'Vazirmatn', sans-serif; color: #fff; user-select: none; }
 
         /* پس‌زمینه نئونی ثابت */
         .glow-bg {
-            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            position: fixed; width: 100%; height: 100%; top: 0; left: 0;
             background: radial-gradient(circle at 50% 50%, #1a0826 0%, #05020a 60%, #000000 100%);
             z-index: 0;
         }
         .nebula {
-            position: absolute; width: 500px; height: 500px; border-radius: 50%;
+            position: fixed; width: 500px; height: 500px; border-radius: 50%;
             background: radial-gradient(circle, rgba(255,45,117,0.18) 0%, rgba(120,0,255,0.06) 50%, transparent 70%);
             top: 50%; left: 50%; transform: translate(-50%, -50%);
             filter: blur(80px); animation: pulse-nebula 6s infinite alternate ease-in-out;
@@ -29,13 +29,13 @@
 
         /* کادر ترمینال */
         #terminal-screen {
-            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            position: fixed; width: 100%; height: 100%; top: 0; left: 0;
             display: flex; justify-content: center; align-items: center;
             z-index: 3000; transition: opacity 0.8s ease, transform 0.8s ease;
         }
         .glass-card {
-            width: 90%; max-width: 600px; background: rgba(18, 12, 28, 0.75);
-            border: 1px solid rgba(255, 77, 109, 0.35); border-radius: 24px; padding: 35px;
+            width: 90%; max-width: 600px; background: rgba(18, 12, 28, 0.85);
+            border: 1px solid rgba(255, 77, 109, 0.35); border-radius: 24px; padding: 30px 25px;
             backdrop-filter: blur(20px);
             box-shadow: 0 25px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(255, 77, 109, 0.1);
             position: relative; overflow: hidden;
@@ -59,20 +59,25 @@
         #forgive-btn:hover { transform: scale(1.05); box-shadow: 0 12px 28px rgba(225, 29, 72, 0.7); }
         #refuse-btn {
             background: rgba(255,255,255,0.08); color: #94a3b8; border: 1px solid rgba(255,255,255,0.15);
-            transition: left 0.3s ease, top 0.3s ease; position: relative;
+            transition: transform 0.3s ease; position: relative;
         }
 
-        /* فاز ۲: کارت دلجویی اصلی */
+        /* فاز ۲: کارت دلجویی اصلی با قابلیت اسکرول داخلی */
         #recovery-screen {
-            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1500;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1500;
         }
         #final-card {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
-            width: 90%; max-width: 620px; background: rgba(12, 8, 20, 0.82);
-            border: 1px solid rgba(255, 182, 193, 0.3); border-radius: 28px; padding: 40px 30px;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95);
+            width: 90%; max-width: 620px; max-height: 85vh; background: rgba(12, 8, 20, 0.88);
+            border: 1px solid rgba(255, 182, 193, 0.3); border-radius: 28px; padding: 35px 25px;
             backdrop-filter: blur(25px); box-shadow: 0 30px 70px rgba(0,0,0,0.9), 0 0 35px rgba(255, 77, 109, 0.2);
-            text-align: center; opacity: 0; transition: opacity 1.2s ease, transform 1.2s ease;
+            text-align: center; opacity: 0; transition: opacity 1s ease, transform 1s ease;
+            overflow-y: auto; /* اسکرول داخلی فقط برای کارت */
+            -webkit-overflow-scrolling: touch;
         }
+        #final-card::-webkit-scrollbar { width: 5px; }
+        #final-card::-webkit-scrollbar-thumb { background: rgba(255, 77, 109, 0.4); border-radius: 10px; }
+
         #final-card.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 
         .heart-badge {
@@ -83,14 +88,14 @@
 
         #apology-text {
             font-size: 16px; line-height: 2.1; color: #f1f5f9; font-weight: 400;
-            text-align: justify; direction: rtl;
+            text-align: justify; direction: rtl; padding-bottom: 10px;
         }
 
-        canvas#space-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        canvas#space-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
         
         .floating-element {
-            position: absolute; bottom: -50px; font-size: 20px; animation: float-up linear infinite;
-            pointer-events: none; filter: drop-shadow(0 0 6px rgba(255,255,255,0.4));
+            position: fixed; bottom: -50px; font-size: 20px; animation: float-up linear infinite;
+            pointer-events: none; filter: drop-shadow(0 0 6px rgba(255,255,255,0.4)); z-index: 2;
         }
         @keyframes float-up {
             0% { transform: translateY(0) rotate(0deg); opacity: 0; }
@@ -142,10 +147,9 @@
         }
         runDiagnostic();
 
-        // شیطنت دکمه "نمی‌بخشم" بدون تکان خوردن کل صفحه
         refuseBtn.addEventListener('mouseenter', () => {
             const container = document.getElementById('btn-container');
-            const maxX = (container.clientWidth / 2) - 60;
+            const maxX = (container.clientWidth / 2) - 50;
             const randomX = (Math.random() - 0.5) * maxX * 2;
             refuseBtn.style.transform = `translateX(${randomX}px)`;
         });
@@ -180,14 +184,13 @@
             type();
         }
 
-        // ذرات نوری کانوپاسی
         const canvas = document.getElementById('space-canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
         let particles = [];
-        for(let i=0; i<160; i++) {
+        for(let i=0; i<150; i++) {
             particles.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
